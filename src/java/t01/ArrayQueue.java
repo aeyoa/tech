@@ -1,7 +1,5 @@
 package t01;
 
-import java.util.NoSuchElementException;
-
 /**
  * Created by arsenykogan on 11/03/14.
  */
@@ -22,6 +20,9 @@ public class ArrayQueue<E> implements Queue<E> {
     }
 
 
+    /* Simple "circularity" implemented using mod and freeSpace counter.
+    * If there is some freSpace but last index equals to array size
+    * than last index simply "jumps" to zero. */
     @Override
     public void add(final E elem) {
         if (freeSpace > 0) {

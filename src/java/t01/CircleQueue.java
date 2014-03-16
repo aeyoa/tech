@@ -9,13 +9,15 @@ public class CircleQueue<E> implements Queue<E> {
     private Node<E> tail;
     private int size;
 
-
+    /* Basic implementation of single directed circular list. */
     public CircleQueue() {
         size = 0;
     }
 
     @Override
     public void add(final E elem) {
+        /* If queue is empty
+        * create node with a pointer to itself. */
         if (size == 0) {
             final Node<E> node = new Node<E>(elem, null);
             node.setNext(node);
@@ -65,6 +67,7 @@ public class CircleQueue<E> implements Queue<E> {
         return false;
     }
 
+    /* toString() is used for debugging */
     @Override
     public String toString() {
         String res = "";
@@ -77,6 +80,7 @@ public class CircleQueue<E> implements Queue<E> {
         return res;
     }
 
+    
     private class Node<E> {
 
         private final E elem;
