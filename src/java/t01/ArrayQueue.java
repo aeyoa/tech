@@ -13,7 +13,7 @@ public class ArrayQueue<E> implements Queue<E> {
     private final Object[] queue;
     private final int size;
 
-    public ArrayQueue(final int size) {
+    public ArrayQueue(final Integer size) {
         this.last = -1;
         this.first = 0;
         this.freeSpace = size;
