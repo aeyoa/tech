@@ -13,11 +13,11 @@ import java.util.List;
 /**
  * Created by arsenykogan on 31/03/14.
  */
-public class FuelUI {
+public class Main {
 
     private static FuelCalculator fuelCalculator = new FuelCalculator();
 
-    public FuelUI() {
+    public Main() {
         fuelCalculator = new FuelCalculator();
     }
 

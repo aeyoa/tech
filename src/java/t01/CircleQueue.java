@@ -80,7 +80,7 @@ public class CircleQueue<E> implements Queue<E> {
         return res;
     }
 
-    
+
     private class Node<E> {
 
         private final E elem;
