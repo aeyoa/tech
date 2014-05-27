@@ -107,7 +107,28 @@ public class QuadsServer extends HttpServlet {
     @Override
     protected void doDelete(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
         final String path = req.getPathInfo();
-        quads.remove(safeParseInt(path.replace("/", "")));
+        if (path == null || path.equals("/")) {
+            /* No quads specified, do nothing. */
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Can't delete all squares");
+        } else {
+            /* If one of the quads specified or there is an error. */
+            if (path.split("/").length > 2 || !path.replace("/", "").matches("[0-9]+")) {
+                /* If there are any more subfolders like 10/10/10
+                * or any letters like /10/hello/ return an error */
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Wrong URL format");
+            } else {
+                /* If everything looks fine.. */
+                final int id = safeParseInt(path.replace("/", ""));
+                if (quads.containsKey(id)) {
+                    /* Then remove this quad. */
+                    resp.setStatus(HttpServletResponse.SC_OK, quads.get(id).toString());
+                    quads.remove(id);
+                } else {
+                    /* If there is no quad with this ID. */
+                    resp.sendError(HttpServletResponse.SC_NOT_FOUND, "No square with this ID");
+                }
+            }
+        }
     }
 
 
