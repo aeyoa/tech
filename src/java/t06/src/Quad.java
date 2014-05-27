@@ -5,27 +5,27 @@ package t06.src;
  */
 public class Quad {
 
-    private int x;
-    private int y;
-    private int size;
+    private String x;
+    private String y;
+    private String size;
     private String color;
 
-    public Quad(final int x, final int y, final int size, final String color) {
+    public Quad(final String x, final String y, final String size, final String color) {
         this.x = x;
         this.y = y;
         this.size = size;
         this.color = color;
     }
 
-    public int getX() {
+    public String getX() {
         return x;
     }
 
-    public int getY() {
+    public String getY() {
         return y;
     }
 
-    public int getSize() {
+    public String getSize() {
         return size;
     }
 
@@ -33,15 +33,15 @@ public class Quad {
         return color;
     }
 
-    public void setX(final int x) {
+    public void setX(final String x) {
         this.x = x;
     }
 
-    public void setY(final int y) {
+    public void setY(final String y) {
         this.y = y;
     }
 
-    public void setSize(final int size) {
+    public void setSize(final String size) {
         this.size = size;
     }
 
