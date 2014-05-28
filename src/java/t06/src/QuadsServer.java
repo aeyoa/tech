@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -63,45 +62,69 @@ public class QuadsServer extends HttpServlet {
 
     @Override
     protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-        if (req.getPathInfo() == null) {
+        final String path = req.getPathInfo();
+        if (path == null || path.equals("/")) {
+            /* URL is nice, let's check parameters. */
             final String xPos = req.getParameter("x");
             final String yPos = req.getParameter("y");
             final String size = req.getParameter("size");
             final String color = req.getParameter("color");
-            if (isInt(xPos) && isInt(yPos) && isInt(size) && isColor(color)) {
-                quads.put(currentID++, new Quad(xPos, yPos, size, color));
-                resp.setStatus(HttpServletResponse.SC_CREATED);
+            /* Check some obvious things */
+            if (xPos == null || safeParseInt(xPos) == null || safeParseInt(xPos) < 0 ||
+                    yPos == null || safeParseInt(yPos) == null || safeParseInt(yPos) < 0 ||
+                    size == null || safeParseInt(size) == null || safeParseInt(size) <= 0 ||
+                    color == null || !isColor(color)) {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Wrong parameters. Can't create square.");
             } else {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                quads.put(++currentID, new Quad(xPos, yPos, size, color));
+                resp.setStatus(HttpServletResponse.SC_CREATED, "id=" + currentID);
             }
+        } else {
+            /* Wrong URL format, return error. */
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Wrong URL format");
         }
-        printQuads();
     }
 
     @Override
     protected void doPut(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-        if (isInt(req.getPathInfo().replace("/", "")) && quads.containsKey(safeParseInt(req.getPathInfo().replace("/", "")))) {
-            final int id = safeParseInt(req.getPathInfo().replace("/", ""));
-            final String xPos = req.getParameter("x");
-            final String yPos = req.getParameter("y");
-            final String size = req.getParameter("size");
-            final String color = req.getParameter("color");
-            if (xPos != null) {
-                quads.get(id).setX(xPos);
-            }
-            if (yPos != null) {
-                quads.get(id).setY(yPos);
-            }
-            if (size != null) {
-                quads.get(id).setSize(size);
-            }
-            if (color != null && isColor(color)) {
-                quads.get(id).setColor(color);
-            }
+        final String path = req.getPathInfo();
+        if (path == null || path.equals("/")) {
+            /* No quads specified, do nothing. */
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Can't change all squares");
         } else {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            /* If one of the quads specified or there is an error. */
+            if (path.split("/").length > 2 || !path.replace("/", "").matches("[0-9]+")) {
+                /* If there are any more subfolders like 10/10/10
+                * or any letters like /10/hello/ return an error */
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Wrong URL format");
+            } else {
+                /* If everything looks fine.. */
+                final int id = safeParseInt(path.replace("/", ""));
+                if (quads.containsKey(id)) {
+                    /* Lets change this quad. */
+                    final String xPos = req.getParameter("x");
+                    final String yPos = req.getParameter("y");
+                    final String size = req.getParameter("size");
+                    final String color = req.getParameter("color");
+                    if (xPos != null && safeParseInt(xPos) != null && safeParseInt(xPos) >= 0) {
+                        quads.get(id).setX(xPos);
+                    }
+                    if (yPos != null && safeParseInt(yPos) != null && safeParseInt(yPos) >= 0) {
+                        quads.get(id).setY(yPos);
+                    }
+                    if (size != null && safeParseInt(size) != null && safeParseInt(size) > 0) {
+                        quads.get(id).setSize(size);
+                    }
+                    if (color != null && isColor(color)) {
+                        quads.get(id).setColor(color);
+                    }
+                    resp.setStatus(HttpServletResponse.SC_OK, "id=" + id + " : " + quads.get(id).toString());
+                } else {
+                    /* If there is no quad with this ID. */
+                    resp.sendError(HttpServletResponse.SC_NOT_FOUND, "No square with this ID");
+                }
+            }
         }
-        printQuads();
     }
 
     @Override
@@ -132,16 +155,9 @@ public class QuadsServer extends HttpServlet {
     }
 
 
-    /* ---------------------------
-    * Some auxiliary methods. */
+    /* Some auxiliary methods. */
 
-    private void printQuads() {
-        System.out.println("-------------------");
-        for (Map.Entry<Integer, Quad> integerQuadEntry : quads.entrySet()) {
-            System.out.println(integerQuadEntry.getKey() + " : " + integerQuadEntry.getValue());
-        }
-    }
-
+    /* (Un)safe int parser. If string can't be parsed returns null. */
     private Integer safeParseInt(final String s) {
         Integer res;
         try {
@@ -152,15 +168,7 @@ public class QuadsServer extends HttpServlet {
         return res;
     }
 
-    private boolean isInt(final String s) {
-        try {
-            Integer.parseInt(s);
-        } catch (final NumberFormatException e) {
-            return false;
-        }
-        return true;
-    }
-
+    /* Simple check for color format. */
     private boolean isColor(final String s) {
         String rgb = s.replaceAll("[0-9]", "");
         return (rgb.equals("rgb(,,)"));
